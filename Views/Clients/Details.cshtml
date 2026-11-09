@@ -1,0 +1,61 @@
+﻿@model VetClinic.Models.Client
+
+@{
+    ViewData["Title"] = "Деталі клієнта";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Деталі клієнта: @Model.FullName</h2>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">На головну</a>
+</div>
+
+<div class="card p-3 mb-4">
+    <dl class="row mb-0">
+        <dt class="col-sm-3">ПІБ</dt>
+        <dd class="col-sm-9">@Model.FullName</dd>
+
+        <dt class="col-sm-3">Телефон</dt>
+        <dd class="col-sm-9">@Model.Phone</dd>
+
+        <dt class="col-sm-3">Адреса</dt>
+        <dd class="col-sm-9">@Model.Address</dd>
+    </dl>
+</div>
+
+<h4>Тварини клієнта</h4>
+
+<table class="table align-middle mb-4">
+    <thead>
+        <tr>
+            <th>Кличка</th>
+            <th>Вид</th>
+            <th>Порода</th>
+            <th>Вік</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Animals != null && Model.Animals.Any())
+        {
+            @foreach (var animal in Model.Animals)
+            {
+                <tr>
+                    <td>@animal.Name</td>
+                    <td>@animal.Species</td>
+                    <td>@animal.Breed</td>
+                    <td>@animal.Age</td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="4" class="text-muted">За цим клієнтом тварин не зареєстровано</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="d-flex gap-2">
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Редагувати</a>
+    <a asp-action="Index" class="btn btn-secondary">Назад до списку</a>
+</div>

@@ -1,0 +1,25 @@
+﻿@model VetClinic.Models.Vet
+
+@{
+    ViewData["Title"] = "Видалити ветлікаря";
+}
+
+<h2 class="text-danger">Видалити ветлікаря?</h2>
+
+<div class="card p-3 mb-3">
+    <h5>Ви дійсно хочете видалити цього лікаря?</h5>
+    <hr />
+    <dl class="row mb-0">
+        <dt class="col-sm-3">ПІБ</dt>
+        <dd class="col-sm-9">@Model.FullName</dd>
+
+        <dt class="col-sm-3">Спеціалізація</dt>
+        <dd class="col-sm-9">@Model.Specialization</dd>
+    </dl>
+</div>
+
+<form asp-action="Delete">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Підтвердити видалення</button>
+    <a asp-action="Index" class="btn btn-secondary">Скасувати</a>
+</form>

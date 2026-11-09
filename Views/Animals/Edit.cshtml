@@ -1,0 +1,49 @@
+﻿@model VetClinic.Models.Animal
+
+@{
+    ViewData["Title"] = "Редагувати тварину";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Редагувати тварину</h2>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">На головну</a>
+</div>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label">Ім'я</label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Species" class="form-label">Вид</label>
+        <input asp-for="Species" class="form-control" />
+        <span asp-validation-for="Species" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Breed" class="form-label">Порода</label>
+        <input asp-for="Breed" class="form-control" />
+        <span asp-validation-for="Breed" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Age" class="form-label">Вік</label>
+        <input asp-for="Age" type="number" class="form-control" />
+        <span asp-validation-for="Age" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ClientId" class="form-label">Власник</label>
+        <select asp-for="ClientId" class="form-select" asp-items="ViewBag.ClientId">
+            <option value="">-- Оберіть власника --</option>
+        </select>
+        <span asp-validation-for="ClientId" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Зберегти</button>
+    <a asp-action="Index" class="btn btn-secondary">Назад</a>
+</form>

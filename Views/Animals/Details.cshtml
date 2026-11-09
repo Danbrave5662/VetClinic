@@ -1,0 +1,34 @@
+﻿@model VetClinic.Models.Animal
+
+@{
+    ViewData["Title"] = "Деталі тварини";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Деталі тварини: @Model.Name</h2>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">На головну</a>
+</div>
+
+<div class="card p-3 mb-4">
+    <dl class="row mb-0">
+        <dt class="col-sm-3">Ім'я</dt>
+        <dd class="col-sm-9">@Model.Name</dd>
+
+        <dt class="col-sm-3">Вид</dt>
+        <dd class="col-sm-9">@Model.Species</dd>
+
+        <dt class="col-sm-3">Порода</dt>
+        <dd class="col-sm-9">@Model.Breed</dd>
+
+        <dt class="col-sm-3">Вік</dt>
+        <dd class="col-sm-9">@Model.Age</dd>
+
+        <dt class="col-sm-3">Власник</dt>
+        <dd class="col-sm-9">@(Model.Client != null ? Model.Client.FullName : "Не вказано")</dd>
+    </dl>
+</div>
+
+<div class="d-flex gap-2">
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Редагувати</a>
+    <a asp-action="Index" class="btn btn-secondary">Назад до списку</a>
+</div>

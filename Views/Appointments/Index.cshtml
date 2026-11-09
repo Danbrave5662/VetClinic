@@ -1,0 +1,167 @@
+﻿@model IEnumerable<VetClinic.Models.Appointment>
+
+@{
+    ViewData["Title"] = "Прийоми";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Прийоми</h2>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">На головну</a>
+</div>
+
+<div class="mb-3">
+    <a asp-action="Create" class="btn btn-primary">Записати на прийом</a>
+</div>
+
+<form asp-action="Index" method="get" class="mb-3 d-flex gap-2 flex-wrap" autocomplete="off">
+    <div class="w-auto">
+        <input type="text" 
+               id="animalInput"
+               name="searchAnimal" 
+               value="@ViewBag.CurrentAnimal" 
+               class="form-control" 
+               placeholder="Пошук за твариною..." 
+               list="animalsList" 
+               autocomplete="off" />
+
+        <datalist id="animalsList">
+            @foreach (var name in Model.Where(a => a.Animal != null).Select(a => a.Animal.Name).Distinct())
+            {
+                <option value="@name"></option>
+            }
+        </datalist>
+    </div>
+
+    <div class="w-auto">
+        <input type="text" 
+               id="vetInput"
+               name="searchVet" 
+               value="@ViewBag.CurrentVet" 
+               class="form-control" 
+               placeholder="Пошук за лікарем..." 
+               list="vetsList" 
+               autocomplete="off" />
+
+        <datalist id="vetsList">
+            @foreach (var vetName in Model.Where(a => a.Vet != null).Select(a => a.Vet.FullName).Distinct())
+            {
+                <option value="@vetName"></option>
+            }
+        </datalist>
+    </div>
+
+    <div class="w-auto">
+        <select name="searchStatus" id="statusSelect" class="form-select">
+            <option value="">-- Усі статуси --</option>
+            <option value="Planned" selected="@(ViewBag.CurrentStatus == "Planned")">Запланований</option>
+            <option value="InProgress" selected="@(ViewBag.CurrentStatus == "InProgress")">В процесі</option>
+            <option value="WaitingPayment" selected="@(ViewBag.CurrentStatus == "WaitingPayment")">Очікує оплати</option>
+            <option value="Completed" selected="@(ViewBag.CurrentStatus == "Completed")">Завершений</option>
+            <option value="Cancelled" selected="@(ViewBag.CurrentStatus == "Cancelled")">Скасований</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-outline-primary">Шукати</button>
+    <a asp-action="Index" class="btn btn-outline-secondary">Скинути</a>
+</form>
+
+<table class="table align-middle" id="appointmentsTable">
+    <thead>
+        <tr>
+            <th>Дата й час</th>
+            <th>Тварина</th>
+            <th>Ветлікар</th>
+            <th>Скарги</th>
+            <th>Статус</th>
+            <th>Дії</th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>@item.DateTime.ToString("dd.MM.yyyy HH:mm")</td>
+            <td class="animal-cell">@(item.Animal != null ? item.Animal.Name : "—")</td>
+            <td class="vet-cell">@(item.Vet != null ? item.Vet.FullName : "—")</td>
+            <td>@item.Complaints</td>
+            <td class="status-cell" data-status="@item.Status">
+                @switch (item.Status)
+                {
+                    case VetClinic.Models.AppointmentStatus.Planned:
+                        <span class="badge bg-warning text-dark">Запланований</span>
+                        break;
+                    case VetClinic.Models.AppointmentStatus.InProgress:
+                        <span class="badge bg-info text-dark">В процесі</span>
+                        break;
+                    case VetClinic.Models.AppointmentStatus.WaitingPayment:
+                        <span class="badge bg-primary">Очікує оплати</span>
+                        break;
+                    case VetClinic.Models.AppointmentStatus.Completed:
+                        <span class="badge bg-success">Завершений</span>
+                        break;
+                    case VetClinic.Models.AppointmentStatus.Cancelled:
+                        <span class="badge bg-danger">Скасований</span>
+                        break;
+                    default:
+                        <span class="badge bg-secondary">@item.Status</span>
+                        break;
+                }
+            </td>
+            <td>
+                <div class="d-flex gap-1">
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary">Деталі</a>
+
+                    @if (item.Status == VetClinic.Models.AppointmentStatus.Planned)
+                    {
+                        <form asp-action="StartExam" asp-route-id="@item.Id" method="post">
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Почати огляд</button>
+                        </form>
+                        <form asp-action="Cancel" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Скасувати прийом?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Скасувати</button>
+                        </form>
+                    }
+                    else if (item.Status == VetClinic.Models.AppointmentStatus.WaitingPayment)
+                    {
+                        <form asp-action="CompleteAppointment" asp-route-id="@item.Id" method="post">
+                            <button type="submit" class="btn btn-sm btn-outline-success">Оплатити рахунок</button>
+                        </form>
+                    }
+
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Видалити</a>
+                </div>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        function filterAppointments() {
+            const animalFilter = document.getElementById('animalInput').value.toLowerCase().trim();
+            const vetFilter = document.getElementById('vetInput').value.toLowerCase().trim();
+            const statusFilter = document.getElementById('statusSelect').value.trim();
+
+            const rows = document.querySelectorAll('#appointmentsTable tbody tr');
+
+            rows.forEach(row => {
+                const animalText = row.querySelector('.animal-cell')?.textContent.toLowerCase() || '';
+                const vetText = row.querySelector('.vet-cell')?.textContent.toLowerCase() || '';
+                const statusValue = row.querySelector('.status-cell')?.getAttribute('data-status') || '';
+
+                const matchesAnimal = animalText.includes(animalFilter);
+                const matchesVet = vetText.includes(vetFilter);
+                const matchesStatus = statusFilter === '' || statusValue === statusFilter;
+
+                if (matchesAnimal && matchesVet && matchesStatus) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        document.getElementById('animalInput').addEventListener('input', filterAppointments);
+        document.getElementById('vetInput').addEventListener('input', filterAppointments);
+        document.getElementById('statusSelect').addEventListener('change', filterAppointments);
+    </script>
+}

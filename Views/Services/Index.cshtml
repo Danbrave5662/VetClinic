@@ -1,0 +1,93 @@
+﻿@model IEnumerable<VetClinic.Models.Service>
+
+@{
+    ViewData["Title"] = "Послуги";
+}
+
+<h2>Послуги</h2>
+
+<div class="d-flex justify-content-between mb-3">
+    <a asp-action="Create" class="btn btn-primary">Додати послугу</a>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">На головну</a>
+</div>
+
+<!-- Блок фільтрів та пошуку -->
+<form asp-action="Index" method="get" class="mb-3 d-flex gap-2 flex-wrap" autocomplete="off">
+    <div>
+        <input type="text"
+               id="searchInput"
+               name="searchString"
+               value="@ViewBag.CurrentSearch"
+               class="form-control w-auto"
+               placeholder="Пошук за назвою..."
+               list="servicesList"
+               autocomplete="off" />
+
+        <!-- Автодоповнення з назв наявних послуг -->
+        <datalist id="servicesList">
+            @foreach (var name in Model.Select(s => s.Name).Distinct())
+            {
+                <option value="@name"></option>
+            }
+        </datalist>
+    </div>
+
+    <input type="number" step="10" name="maxPrice" value="@ViewBag.CurrentMaxPrice" class="form-control w-auto" placeholder="Макс. ціна (грн)" />
+
+    <button type="submit" class="btn btn-outline-primary">Шукати</button>
+    <a asp-action="Index" class="btn btn-outline-secondary">Скинути</a>
+</form>
+
+<table class="table align-middle" id="servicesTable">
+    <thead>
+        <tr>
+            <th>Назва</th>
+            <th>
+                <a asp-action="Index"
+                   asp-route-sortOrder="@ViewBag.PriceSortParam"
+                   asp-route-searchString="@ViewBag.CurrentSearch"
+                   asp-route-maxPrice="@ViewBag.CurrentMaxPrice"
+                   class="text-decoration-none text-dark fw-bold">
+                    Ціна, грн ⇅
+                </a>
+            </th>
+            <th>Дії</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td class="service-name">@item.Name</td>
+                <td>@item.Price.ToString("F2")</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning">Редагувати</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info">Деталі</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Видалити</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        // Миттєва фільтрація таблиці на льоту при введенні літер
+        document.getElementById('searchInput').addEventListener('input', function () {
+            const filter = this.value.toLowerCase().trim();
+            const rows = document.querySelectorAll('#servicesTable tbody tr');
+
+            rows.forEach(row => {
+                const nameCell = row.querySelector('.service-name');
+                if (nameCell) {
+                    const nameText = nameCell.textContent.toLowerCase();
+                    if (nameText.includes(filter)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            });
+        });
+    </script>
+}

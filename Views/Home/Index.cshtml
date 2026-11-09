@@ -1,0 +1,88 @@
+﻿@{
+    ViewData["Title"] = "Головна";   // заголовок вкладки браузера
+}
+
+@* верхній блок з назвою та описом *@
+<div class="text-center py-4">
+    <h1 class="display-5">Ветеринарна клініка</h1>
+    <p class="lead">Облік клієнтів, тварин, прийомів і послуг</p>
+</div>
+
+@* лічильники з бази даних (значення передав HomeController через ViewBag) *@
+<div class="row text-center mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card"><div class="card-body">
+            <h2>@ViewBag.ClientsCount</h2>
+            <p class="mb-0">Клієнтів</p>
+        </div></div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card"><div class="card-body">
+            <h2>@ViewBag.AnimalsCount</h2>
+            <p class="mb-0">Тварин</p>
+        </div></div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card"><div class="card-body">
+            <h2>@ViewBag.AppointmentsCount</h2>
+            <p class="mb-0">Прийомів усього</p>
+        </div></div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card"><div class="card-body">
+            <h2>@ViewBag.ActiveCount</h2>
+            <p class="mb-0">Активних прийомів</p>
+        </div></div>
+    </div>
+</div>
+
+@* плитки-посилання на розділи застосунку *@
+<div class="row">
+    <div class="col-md-3 mb-3">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">Клієнти</h5>
+                <p class="card-text">Власники тварин та їхні контакти.</p>
+                <a asp-controller="Clients" asp-action="Index" class="btn btn-primary mt-auto align-self-start">Відкрити</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">Тварини</h5>
+                <p class="card-text">Картки тварин з прив'язкою до власника.</p>
+                <a asp-controller="Animals" asp-action="Index" class="btn btn-primary mt-auto align-self-start">Відкрити</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">Прийоми</h5>
+                <p class="card-text">Запис на прийом, статуси та рахунок.</p>
+                <a asp-controller="Appointments" asp-action="Index" class="btn btn-primary mt-auto align-self-start">Відкрити</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">Послуги</h5>
+                <p class="card-text">Перелік послуг і їхні ціни.</p>
+                <a asp-controller="Services" asp-action="Index" class="btn btn-primary mt-auto align-self-start">Відкрити</a>
+            </div>
+        </div>
+    </div>
+
+    @* ОСЬ ЦЕЙ БЛОК ДОДАЄМО СЮДИ *@
+    <div class="col-md-3 mb-3">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">Ветлікарі</h5>
+                <p class="card-text">Список лікарів та їх спеціалізації.</p>
+                <a asp-controller="Vets" asp-action="Index" class="btn btn-primary mt-auto align-self-start">Відкрити</a>
+            </div>
+        </div>
+    </div>
+</div>

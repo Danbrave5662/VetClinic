@@ -1,0 +1,43 @@
+﻿@model VetClinic.Models.Vet
+
+@{
+    ViewData["Title"] = "Деталі ветлікаря";
+}
+
+<h2>Деталі ветлікаря</h2>
+
+<div class="card p-3 mb-4">
+    <dl class="row mb-0">
+        <dt class="col-sm-3">ПІБ</dt>
+        <dd class="col-sm-9">@Model.FullName</dd>
+
+        <dt class="col-sm-3">Телефон</dt>
+        <dd class="col-sm-9">@Model.Phone</dd>
+
+        <dt class="col-sm-3">Спеціалізація</dt>
+        <dd class="col-sm-9">@Model.Specialization</dd>
+    </dl>
+</div>
+
+<h4>Прийоми лікаря</h4>
+@if (Model.Appointments != null && Model.Appointments.Any())
+{
+    <ul class="list-group mb-3">
+        @foreach (var app in Model.Appointments)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                Прийом №@app.Id — Дата: @app.DateTime.ToShortDateString()
+                <span class="badge bg-info rounded-pill">@app.Status</span>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p class="text-muted">У цього лікаря поки немає призначених прийомів.</p>
+}
+
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Редагувати</a>
+    <a asp-action="Index" class="btn btn-secondary">Назад</a>
+</div>

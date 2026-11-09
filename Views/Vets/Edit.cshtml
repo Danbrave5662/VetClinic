@@ -1,0 +1,40 @@
+﻿@model VetClinic.Models.Vet
+
+@{
+    ViewData["Title"] = "Редагувати ветлікаря";
+}
+
+<h2>Редагувати ветлікаря</h2>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="mb-3">
+        <label asp-for="FullName" class="form-label">ПІБ</label>
+        <input asp-for="FullName" class="form-control" />
+        <span asp-validation-for="FullName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Phone" class="form-label">Телефон</label>
+        <input asp-for="Phone" class="form-control" />
+        <span asp-validation-for="Phone" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Specialization" class="form-label">Спеціалізація</label>
+        <select asp-for="Specialization" class="form-select">
+            <option value="">-- Оберіть спеціалізацію --</option>
+            <option value="Терапевт">Терапевт</option>
+            <option value="Хірург">Хірург</option>
+            <option value="Ортопед">Ортопед</option>
+            <option value="Дерматолог">Дерматолог</option>
+            <option value="Офтальмолог">Офтальмолог</option>
+            <option value="Стоматолог">Стоматолог</option>
+        </select>
+        <span asp-validation-for="Specialization" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Зберегти</button>
+    <a asp-action="Index" class="btn btn-secondary">Назад</a>
+</form>

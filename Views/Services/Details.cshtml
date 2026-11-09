@@ -1,0 +1,22 @@
+﻿@model VetClinic.Models.Service
+
+@{
+    ViewData["Title"] = "Деталі послуги";
+}
+
+<h2>Деталі послуги</h2>
+
+<div class="card p-3 mb-3">
+    <dl class="row mb-0">
+        <dt class="col-sm-3">Назва</dt>
+        <dd class="col-sm-9">@Model.Name</dd>
+
+        <dt class="col-sm-3">Ціна</dt>
+        <dd class="col-sm-9">@Model.Price.ToString("F2") грн</dd>
+    </dl>
+</div>
+
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Редагувати</a>
+    <a asp-action="Index" class="btn btn-secondary">Назад</a>
+</div>

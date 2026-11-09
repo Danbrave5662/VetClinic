@@ -1,0 +1,34 @@
+﻿@model VetClinic.Models.Appointment
+
+@{
+    ViewData["Title"] = "Видалити прийом";
+}
+
+<h2 class="text-danger">Видалити прийом?</h2>
+
+<div class="card p-3 mb-3">
+    <h5>Ви дійсно хочете видалити цей прийом із бази даних?</h5>
+    <hr />
+    <dl class="row mb-0">
+        <dt class="col-sm-3">Дата й час</dt>
+        <dd class="col-sm-9">@Model.DateTime.ToString("dd.MM.yyyy HH:mm")</dd>
+
+        <dt class="col-sm-3">Тварина</dt>
+        <dd class="col-sm-9">@(Model.Animal != null ? Model.Animal.Name : "—")</dd>
+
+        <dt class="col-sm-3">Ветлікар</dt>
+        <dd class="col-sm-9">@(Model.Vet != null ? Model.Vet.FullName : "—")</dd>
+
+        <dt class="col-sm-3">Скарги</dt>
+        <dd class="col-sm-9">@Model.Complaints</dd>
+
+        <dt class="col-sm-3">Статус</dt>
+        <dd class="col-sm-9">@Model.Status</dd>
+    </dl>
+</div>
+
+<form asp-action="Delete">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Підтвердити видалення</button>
+    <a asp-action="Index" class="btn btn-secondary">Скасувати</a>
+</form>
