@@ -16,6 +16,7 @@ namespace VetClinic.Controllers
             db = context;
         }
 
+        // Список прийомів з пошуком за твариною, лікарем і статусом
         public IActionResult Index(string searchAnimal, string searchVet, string searchStatus)
         {
             ViewBag.CurrentAnimal = searchAnimal;
@@ -63,25 +64,24 @@ namespace VetClinic.Controllers
 
         public IActionResult Create()
         {
-            ViewBag.Animals = new SelectList(db.Animals, "Id", "Name");
-            ViewBag.Vets = new SelectList(
-                db.Vets.Select(v => new { Id = v.Id, DisplayName = v.FullName + " (" + v.Specialization + ")" }),
-                "Id",
-                "DisplayName"
-            );
-            return View();
+            // Поточний час без секунд для поля datetime-local
+            var now = DateTime.Now;
+            var model = new Appointment { DateTime = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0) };
+
+            FillLists(model);
+            return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(Appointment appointment)
         {
-            bool isVetBusy = db.Appointments.Any(a =>
-                a.VetId == appointment.VetId &&
-                a.DateTime.Date == appointment.DateTime.Date &&
-                a.Status != AppointmentStatus.Cancelled);
+            if (appointment.DateTime.Date < DateTime.Today)
+            {
+                ModelState.AddModelError(nameof(Appointment.DateTime), "Не можна записатися на минулу дату!");
+            }
 
-            if (isVetBusy)
+            if (IsVetBusy(appointment))
             {
                 ModelState.AddModelError("", "Обраний лікар уже має прийом на цю дату!");
             }
@@ -93,13 +93,56 @@ namespace VetClinic.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewBag.Animals = new SelectList(db.Animals, "Id", "Name", appointment.AnimalId);
-            ViewBag.Vets = new SelectList(
-                db.Vets.Select(v => new { Id = v.Id, DisplayName = v.FullName + " (" + v.Specialization + ")" }),
-                "Id",
-                "DisplayName",
-                appointment.VetId
-            );
+            FillLists(appointment);
+            return View(appointment);
+        }
+
+        public IActionResult Edit(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var appointment = db.Appointments.Find(id);
+            if (appointment == null) return NotFound();
+
+            // Завершені й скасовані прийоми не редагуються
+            if (IsClosed(appointment.Status)) return RedirectToAction(nameof(Index));
+
+            // Прибираємо секунди, щоб працював datetime-local
+            var d = appointment.DateTime;
+            appointment.DateTime = new DateTime(d.Year, d.Month, d.Day, d.Hour, d.Minute, 0);
+
+            FillLists(appointment);
+            return View(appointment);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(Appointment appointment)
+        {
+            var current = db.Appointments.AsNoTracking().FirstOrDefault(a => a.Id == appointment.Id);
+            if (current == null) return NotFound();
+
+            if (IsClosed(current.Status)) return RedirectToAction(nameof(Index));
+
+            if (appointment.DateTime.Date < DateTime.Today)
+            {
+                ModelState.AddModelError(nameof(Appointment.DateTime), "Не можна вказати минулу дату!");
+            }
+
+            if (IsVetBusy(appointment))
+            {
+                ModelState.AddModelError("", "Обраний лікар уже має прийом на цю дату!");
+            }
+
+            if (ModelState.IsValid)
+            {
+                appointment.Status = current.Status;   // статус тут не змінюється
+                db.Update(appointment);
+                db.SaveChanges();
+                return RedirectToAction(nameof(Index));
+            }
+
+            FillLists(appointment);
             return View(appointment);
         }
 
@@ -130,58 +173,39 @@ namespace VetClinic.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // Додати кілька послуг: лише до незавершених прийомів і без дублів
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult AddService(int appointmentId, int serviceId)
+        public IActionResult AddService(int appointmentId, int[] serviceIds)
         {
             var appointment = db.Appointments.Include(a => a.Services).FirstOrDefault(a => a.Id == appointmentId);
-            var service = db.Services.Find(serviceId);
 
-            if (appointment != null && service != null)
+            if (appointment != null && !IsClosed(appointment.Status))
             {
-                if (appointment.Services == null)
+                foreach (var serviceId in serviceIds.Distinct())
                 {
-                    appointment.Services = new List<Service>();
+                    var service = db.Services.Find(serviceId);
+                    if (service != null && !appointment.Services.Any(s => s.Id == serviceId))
+                    {
+                        appointment.Services.Add(service);
+                    }
                 }
-                appointment.Services.Add(service);
                 db.SaveChanges();
             }
 
             return RedirectToAction(nameof(Details), new { id = appointmentId });
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult ProceedToPayment(int id)
-        {
-            var appointment = db.Appointments.Find(id);
-            if (appointment != null)
-            {
-                appointment.Status = AppointmentStatus.WaitingPayment;
-                db.SaveChanges();
-            }
-            return RedirectToAction(nameof(Index));
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult CompleteAppointment(int id)
-        {
-            var appointment = db.Appointments.Find(id);
-            if (appointment != null)
-            {
-                appointment.Status = AppointmentStatus.Completed;
-                db.SaveChanges();
-            }
-            return RedirectToAction(nameof(Index));
-        }
-
+        // Початок огляду: прострочений прийом спочатку переносять через редагування дати
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult StartExam(int id)
         {
             var appointment = db.Appointments.Find(id);
-            if (appointment != null)
+            if (appointment == null) return NotFound();
+
+            if (appointment.Status == AppointmentStatus.Planned
+                && appointment.DateTime.Date >= DateTime.Today)
             {
                 appointment.Status = AppointmentStatus.InProgress;
                 db.SaveChanges();
@@ -189,17 +213,55 @@ namespace VetClinic.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // Інші зміни статусу: дозволені лише переходи з діаграми станів
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Cancel(int id)
+        public IActionResult ProceedToPayment(int id) =>
+            ChangeStatus(id, AppointmentStatus.InProgress, AppointmentStatus.WaitingPayment);
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult CompleteAppointment(int id) =>
+            ChangeStatus(id, AppointmentStatus.WaitingPayment, AppointmentStatus.Completed);
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Cancel(int id) =>
+            ChangeStatus(id, AppointmentStatus.Planned, AppointmentStatus.Cancelled);
+
+        private IActionResult ChangeStatus(int id, AppointmentStatus from, AppointmentStatus to)
         {
             var appointment = db.Appointments.Find(id);
-            if (appointment != null)
+            if (appointment == null) return NotFound();
+
+            if (appointment.Status == from)
             {
-                appointment.Status = AppointmentStatus.Cancelled;
+                appointment.Status = to;
                 db.SaveChanges();
             }
             return RedirectToAction(nameof(Index));
+        }
+
+        private static bool IsClosed(AppointmentStatus status) =>
+            status == AppointmentStatus.Completed || status == AppointmentStatus.Cancelled;
+
+        // Чи має лікар інший активний прийом на цю дату
+        private bool IsVetBusy(Appointment appointment) =>
+            appointment.VetId != null && db.Appointments.Any(a =>
+                a.Id != appointment.Id &&
+                a.VetId == appointment.VetId &&
+                a.DateTime.Date == appointment.DateTime.Date &&
+                a.Status != AppointmentStatus.Cancelled);
+
+        // Списки для випадних меню (тварини, лікарі)
+        private void FillLists(Appointment? a)
+        {
+            ViewBag.Animals = new SelectList(db.Animals, "Id", "Name", a?.AnimalId);
+            ViewBag.Vets = new SelectList(
+                db.Vets.Select(v => new { v.Id, DisplayName = v.FullName + " (" + v.Specialization + ")" }),
+                "Id",
+                "DisplayName",
+                a?.VetId);
         }
     }
 }

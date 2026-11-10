@@ -27,6 +27,10 @@
             {
                 case VetClinic.Models.AppointmentStatus.Planned:
                     <span class="badge bg-warning text-dark">Запланований</span>
+                    if (Model.DateTime.Date < DateTime.Today)
+                    {
+                        <span class="badge bg-secondary">Прострочено</span>
+                    }
                     break;
                 case VetClinic.Models.AppointmentStatus.InProgress:
                     <span class="badge bg-info text-dark">В процесі</span>
@@ -83,36 +87,47 @@
 
 @if (Model.Status == VetClinic.Models.AppointmentStatus.InProgress || Model.Status == VetClinic.Models.AppointmentStatus.Planned)
 {
-    <form asp-action="AddService" method="post" class="d-flex gap-2 mb-4">
+    <form asp-action="AddService" method="post" class="mb-4">
         <input type="hidden" name="appointmentId" value="@Model.Id" />
-        <select name="serviceId" class="form-select w-auto" asp-items="ViewBag.ServicesList">
-            <option value="">-- Оберіть послугу --</option>
-        </select>
-        <button type="submit" class="btn btn-primary">Додати послугу</button>
+
+        <div class="mb-2">
+            @foreach (var s in (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.ServicesList)
+            {
+                var added = Model.Services != null && Model.Services.Any(x => x.Id.ToString() == s.Value);
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="serviceIds" value="@s.Value" id="svc@(s.Value)" disabled="@added" />
+                    <label class="form-check-label" for="svc@(s.Value)">
+                        @s.Text @(added ? "(вже додано)" : "")
+                    </label>
+                </div>
+            }
+        </div>
+
+        <button type="submit" class="btn btn-primary">Додати вибрані послуги</button>
     </form>
 }
 
 <div class="d-flex gap-2">
     @if (Model.Status == VetClinic.Models.AppointmentStatus.Planned)
     {
-        <form asp-action="StartExam" asp-route-id="@Model.Id" method="post">
-            <button type="submit" class="btn btn-primary">Почати огляд</button>
-        </form>
-    }
-    else if (Model.Status == VetClinic.Models.AppointmentStatus.InProgress)
-    {
-        @if (Model.Services != null && Model.Services.Any())
+        @if (Model.DateTime.Date >= DateTime.Today)
         {
-            <form asp-action="ProceedToPayment" asp-route-id="@Model.Id" method="post">
-                <button type="submit" class="btn btn-warning">Перейти до оплати</button>
+            <form asp-action="StartExam" asp-route-id="@Model.Id" method="post">
+                <button type="submit" class="btn btn-primary">Почати огляд</button>
             </form>
         }
         else
         {
-            <form asp-action="CompleteAppointment" asp-route-id="@Model.Id" method="post">
-                <button type="submit" class="btn btn-success">Завершити прийом</button>
-            </form>
+            <span class="text-danger align-self-center">Прийом прострочено. Змініть дату, щоб почати огляд.</span>
         }
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-warning">Редагувати</a>
+    }
+    else if (Model.Status == VetClinic.Models.AppointmentStatus.InProgress)
+    {
+        <form asp-action="ProceedToPayment" asp-route-id="@Model.Id" method="post">
+            <button type="submit" class="btn btn-warning">Перейти до оплати</button>
+        </form>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-warning">Редагувати</a>
     }
     else if (Model.Status == VetClinic.Models.AppointmentStatus.WaitingPayment)
     {

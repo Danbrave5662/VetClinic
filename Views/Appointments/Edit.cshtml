@@ -1,0 +1,46 @@
+﻿@model VetClinic.Models.Appointment
+
+@{
+    ViewData["Title"] = "Редагувати прийом";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Редагувати прийом</h2>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">На головну</a>
+</div>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="AnimalId" class="form-label">Тварина</label>
+        <select asp-for="AnimalId" class="form-select" asp-items="ViewBag.Animals">
+            <option value="">-- Оберіть тварину --</option>
+        </select>
+        <span asp-validation-for="AnimalId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="VetId" class="form-label">Ветлікар</label>
+        <select asp-for="VetId" class="form-select" asp-items="ViewBag.Vets">
+            <option value="">-- Оберіть лікаря --</option>
+        </select>
+        <span asp-validation-for="VetId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="DateTime" class="form-label">Дата й час</label>
+        <input asp-for="DateTime" class="form-control" type="datetime-local" min="@DateTime.Today.ToString("yyyy-MM-ddT00:00")" />
+        <span asp-validation-for="DateTime" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Complaints" class="form-label">Скарги</label>
+        <input asp-for="Complaints" class="form-control" />
+        <span asp-validation-for="Complaints" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Зберегти</button>
+    <a asp-action="Index" class="btn btn-secondary">Назад</a>
+</form>

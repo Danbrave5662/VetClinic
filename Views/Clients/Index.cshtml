@@ -15,13 +15,13 @@
 
 <form asp-action="Index" method="get" class="mb-3 d-flex gap-2 flex-wrap" autocomplete="off">
     <div class="w-auto">
-        <input type="text" 
+        <input type="text"
                id="nameInput"
-               name="searchName" 
-               value="@ViewBag.CurrentName" 
-               class="form-control" 
-               placeholder="Пошук за ПІБ..." 
-               list="clientNamesList" 
+               name="searchName"
+               value="@ViewBag.CurrentName"
+               class="form-control"
+               placeholder="Пошук за ПІБ..."
+               list="clientNamesList"
                autocomplete="off" />
 
         <datalist id="clientNamesList">
@@ -33,13 +33,13 @@
     </div>
 
     <div class="w-auto">
-        <input type="text" 
+        <input type="text"
                id="phoneInput"
-               name="searchPhone" 
-               value="@ViewBag.CurrentPhone" 
-               class="form-control" 
-               placeholder="Пошук за телефоном..." 
-               list="phonesList" 
+               name="searchPhone"
+               value="@ViewBag.CurrentPhone"
+               class="form-control"
+               placeholder="Пошук за телефоном..."
+               list="phonesList"
                autocomplete="off" />
 
         <datalist id="phonesList">
@@ -59,7 +59,7 @@
         <tr>
             <th>ПІБ</th>
             <th>Телефон</th>
-            <th>Адреса</th>
+            <th>Email</th>
             <th>Дії</th>
         </tr>
     </thead>

@@ -13,7 +13,6 @@ namespace VetClinic.Controllers
             db = context;
         }
 
-        // GET: Services
         public IActionResult Index(string searchString, decimal? maxPrice, string sortOrder)
         {
             ViewBag.CurrentSearch = searchString;
@@ -22,19 +21,19 @@ namespace VetClinic.Controllers
 
             var services = db.Services.AsQueryable();
 
-            // 1. Пошук за назвою
+            // Пошук за назвою
             if (!string.IsNullOrEmpty(searchString))
             {
                 services = services.Where(s => s.Name.Contains(searchString));
             }
 
-            // 2. Фільтр за максимальною ціною
+            // Фільтр за максимальною ціною
             if (maxPrice.HasValue)
             {
                 services = services.Where(s => s.Price <= maxPrice.Value);
             }
 
-            // 3. Сортування за ціною
+            // Сортування за ціною
             switch (sortOrder)
             {
                 case "price_desc":
@@ -108,6 +107,7 @@ namespace VetClinic.Controllers
             var service = db.Services.FirstOrDefault(m => m.Id == id);
             if (service == null) return NotFound();
 
+            ViewBag.UsedCount = UsedCount(service.Id);
             return View(service);
         }
 
@@ -116,12 +116,18 @@ namespace VetClinic.Controllers
         public IActionResult DeleteConfirmed(int id)
         {
             var service = db.Services.Find(id);
-            if (service != null)
-            {
-                db.Services.Remove(service);
-                db.SaveChanges();
-            }
+            if (service == null) return RedirectToAction(nameof(Index));
+
+            // Послугу з прийомів не видаляємо, щоб не змінювати рахунки й звіт
+            if (UsedCount(id) > 0) return RedirectToAction(nameof(Delete), new { id });
+
+            db.Services.Remove(service);
+            db.SaveChanges();
             return RedirectToAction(nameof(Index));
         }
+
+        // Кількість прийомів, у яких є ця послуга
+        private int UsedCount(int serviceId) =>
+            db.Appointments.Count(a => a.Services.Any(s => s.Id == serviceId));
     }
 }

@@ -1,0 +1,40 @@
+﻿@model List<VetClinic.Models.Appointment>
+@{
+    ViewData["Title"] = "Звіт за період";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Виручка за період</h2>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">На головну</a>
+</div>
+
+<form asp-action="Revenue" method="get" class="d-flex gap-2 mb-3">
+    <input type="date" name="dateFrom" value="@(((DateTime)ViewBag.From).ToString("yyyy-MM-dd"))" class="form-control w-auto" />
+    <input type="date" name="dateTo" value="@(((DateTime)ViewBag.To).ToString("yyyy-MM-dd"))" class="form-control w-auto" />
+    <button type="submit" class="btn btn-primary">Показати</button>
+</form>
+
+<h4>Разом: @(((decimal)ViewBag.Total).ToString("F2")) грн</h4>
+<p>Завершених прийомів: @Model.Count</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Дата</th>
+            <th>Тварина</th>
+            <th>Послуги</th>
+            <th class="text-end">Сума, грн</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var a in Model)
+        {
+            <tr>
+                <td>@a.DateTime.ToString("dd.MM.yyyy")</td>
+                <td>@(a.Animal != null ? a.Animal.Name : "—")</td>
+                <td>@string.Join(", ", a.Services.Select(s => s.Name))</td>
+                <td class="text-end">@a.Services.Sum(s => s.Price).ToString("F2")</td>
+            </tr>
+        }
+    </tbody>
+</table>

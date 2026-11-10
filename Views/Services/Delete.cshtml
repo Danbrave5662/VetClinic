@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Видалити послугу";
+    int usedCount = ViewBag.UsedCount ?? 0;
 }
 
 <h2 class="text-danger">Видалити послугу?</h2>
@@ -18,8 +19,18 @@
     </dl>
 </div>
 
-<form asp-action="Delete">
-    <input type="hidden" asp-for="Id" />
-    <button type="submit" class="btn btn-danger">Підтвердити видалення</button>
-    <a asp-action="Index" class="btn btn-secondary">Скасувати</a>
-</form>
+@if (usedCount > 0)
+{
+    <div class="alert alert-warning">
+        Цю послугу не можна видалити: вона використана в прийомах (@usedCount).
+    </div>
+    <a asp-action="Index" class="btn btn-secondary">До списку послуг</a>
+}
+else
+{
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="Id" />
+        <button type="submit" class="btn btn-danger">Підтвердити видалення</button>
+        <a asp-action="Index" class="btn btn-secondary">Скасувати</a>
+    </form>
+}

@@ -21,13 +21,13 @@ namespace VetClinic.Controllers
 
             var vets = db.Vets.AsQueryable();
 
-            // 1. Фільтр за ПІБ
+            // Фільтр за ПІБ
             if (!string.IsNullOrEmpty(searchName))
             {
                 vets = vets.Where(v => v.FullName.Contains(searchName));
             }
 
-            // 2. Фільтр за спеціалізацією
+            // Фільтр за спеціалізацією
             if (!string.IsNullOrEmpty(searchSpec))
             {
                 vets = vets.Where(v => v.Specialization == searchSpec);
@@ -101,6 +101,7 @@ namespace VetClinic.Controllers
 
             return View(vet);
         }
+
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
@@ -111,9 +112,10 @@ namespace VetClinic.Controllers
 
             if (vet != null)
             {
-                if (vet.Appointments != null && vet.Appointments.Any())
+                // Історія прийомів зберігається, лікар в них стає не призначеним
+                foreach (var appointment in vet.Appointments)
                 {
-                    db.Appointments.RemoveRange(vet.Appointments);
+                    appointment.VetId = null;
                 }
 
                 db.Vets.Remove(vet);

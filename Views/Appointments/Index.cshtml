@@ -15,13 +15,13 @@
 
 <form asp-action="Index" method="get" class="mb-3 d-flex gap-2 flex-wrap" autocomplete="off">
     <div class="w-auto">
-        <input type="text" 
+        <input type="text"
                id="animalInput"
-               name="searchAnimal" 
-               value="@ViewBag.CurrentAnimal" 
-               class="form-control" 
-               placeholder="Пошук за твариною..." 
-               list="animalsList" 
+               name="searchAnimal"
+               value="@ViewBag.CurrentAnimal"
+               class="form-control"
+               placeholder="Пошук за твариною..."
+               list="animalsList"
                autocomplete="off" />
 
         <datalist id="animalsList">
@@ -33,13 +33,13 @@
     </div>
 
     <div class="w-auto">
-        <input type="text" 
+        <input type="text"
                id="vetInput"
-               name="searchVet" 
-               value="@ViewBag.CurrentVet" 
-               class="form-control" 
-               placeholder="Пошук за лікарем..." 
-               list="vetsList" 
+               name="searchVet"
+               value="@ViewBag.CurrentVet"
+               class="form-control"
+               placeholder="Пошук за лікарем..."
+               list="vetsList"
                autocomplete="off" />
 
         <datalist id="vetsList">
@@ -88,6 +88,10 @@
                 {
                     case VetClinic.Models.AppointmentStatus.Planned:
                         <span class="badge bg-warning text-dark">Запланований</span>
+                        if (item.DateTime.Date < DateTime.Today)
+                        {
+                            <span class="badge bg-secondary">Прострочено</span>
+                        }
                         break;
                     case VetClinic.Models.AppointmentStatus.InProgress:
                         <span class="badge bg-info text-dark">В процесі</span>
@@ -110,11 +114,20 @@
                 <div class="d-flex gap-1">
                     <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary">Деталі</a>
 
+                    @if (item.Status != VetClinic.Models.AppointmentStatus.Completed
+                      && item.Status != VetClinic.Models.AppointmentStatus.Cancelled)
+                    {
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning">Редагувати</a>
+                    }
+
                     @if (item.Status == VetClinic.Models.AppointmentStatus.Planned)
                     {
-                        <form asp-action="StartExam" asp-route-id="@item.Id" method="post">
-                            <button type="submit" class="btn btn-sm btn-outline-primary">Почати огляд</button>
-                        </form>
+                        @if (item.DateTime.Date >= DateTime.Today)
+                        {
+                            <form asp-action="StartExam" asp-route-id="@item.Id" method="post">
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Почати огляд</button>
+                            </form>
+                        }
                         <form asp-action="Cancel" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Скасувати прийом?');">
                             <button type="submit" class="btn btn-sm btn-outline-danger">Скасувати</button>
                         </form>

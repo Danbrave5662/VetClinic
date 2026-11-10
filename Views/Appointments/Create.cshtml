@@ -10,6 +10,8 @@
 </div>
 
 <form asp-action="Create" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
     <div class="mb-3">
         <label asp-for="AnimalId" class="form-label">Тварина</label>
         <select asp-for="AnimalId" class="form-select" asp-items="ViewBag.Animals">
@@ -28,7 +30,7 @@
 
     <div class="mb-3">
         <label asp-for="DateTime" class="form-label">Дата й час</label>
-        <input asp-for="DateTime" class="form-control" type="datetime-local" />
+        <input asp-for="DateTime" class="form-control" type="datetime-local" min="@DateTime.Today.ToString("yyyy-MM-ddT00:00")" />
         <span asp-validation-for="DateTime" class="text-danger"></span>
     </div>
 
